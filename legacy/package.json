@@ -1,0 +1,19 @@
+{
+  "name": "deriv-websock-bot-cp",
+  "version": "1.0.0",
+  "description": "Deriv WebSocket trading bot with modular frontend and backend",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node backend/server.js",
+    "dashboard": "HOSTNAME=dashboard.deriv PORT=3002 node backend/server.js"
+  },
+  "author": "MDA-devx",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "ws": "^8.20.0"
+  }
+}
