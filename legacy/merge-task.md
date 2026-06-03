@@ -19,29 +19,29 @@
 
 ### 0.1 Repository & Branching
 
-- [~] Create folder structure for merged project (e.g. `deriv-bot-next/`)
-- [ ] Initialize Next.js 16 + TypeScript + Tailwind (or copy from `deriv-fallrise-template`)
-- [ ] Copy `@deriv/core` package from template into monorepo
-- [ ] Copy `@deriv-com/smartcharts-champion` integration (assets copy script, CSS import, declarations.d.ts)
-- [ ] Copy shadcn/ui component library + tailwind config + CSS variables from template
-- [ ] Copy `hooks/`, `lib/`, `components/ui/` from template
-- [ ] Copy `components/custom/` (providers, layout, header, footer, theme, viewport scaler)
-- [ ] Set up `next.config.js` with `transpilePackages: ['@deriv/core']`
-- [ ] Set up path aliases in `tsconfig.json` (`@/*`, `@deriv/core`)
-- [ ] Verify `npm run dev` starts successfully with template's original Rise/Fall page
-- [ ] Create git branch `merge-initial` and commit
+- [x] Create folder structure for merged project (e.g. `deriv-bot-next/`)
+- [x] Initialize Next.js 16 + TypeScript + Tailwind (or copy from `deriv-fallrise-template`)
+- [x] Copy `@deriv/core` package from template into monorepo
+- [x] Copy `@deriv-com/smartcharts-champion` integration (assets copy script, CSS import, declarations.d.ts)
+- [x] Copy shadcn/ui component library + tailwind config + CSS variables from template
+- [x] Copy `hooks/`, `lib/`, `components/ui/` from template
+- [x] Copy `components/custom/` (providers, layout, header, footer, theme, viewport scaler)
+- [x] Set up `next.config.js` with `transpilePackages: ['@deriv/core']`
+- [x] Set up path aliases in `tsconfig.json` (`@/*`, `@deriv/core`)
+- [x] Verify `npm run dev` starts successfully with template's original Rise/Fall page
+- [x] Create git branch `main` and commit
 
 ### 0.2 Architecture Decisions
 
-- [ ] **Chart library**: SmartCharts (template) vs Lightweight Charts (bot)
+- [x] **Chart library**: SmartCharts (template) vs Lightweight Charts (bot)
   - Decision: SmartCharts (keep template's chart, more Deriv-standard)
-- [ ] **Auth strategy**: OAuth PKCE (template) + API Token fallback (bot)
+- [x] **Auth strategy**: OAuth PKCE (template) + API Token fallback (bot)
   - Decision: Support both modes — toggle via env/config
-- [ ] **Tab layout**: Next.js App Router pages vs single page with conditional rendering
+- [x] **Tab layout**: Next.js App Router pages vs single page with conditional rendering
   - Decision: Single page with shadcn Tabs (avoids route complexity, keeps WS context alive)
-- [ ] **State management**: React Context vs Zustand vs Redux
+- [x] **State management**: React Context vs Zustand vs Redux
   - Decision: React Context for global state (WS, data, signals) — lightweight, no extra dep
-- [ ] **Backtesting API**: Keep Express backend as separate process
+- [x] **Backtesting API**: Keep Express backend as separate process
   - Decision: Keep as standalone server, proxy through Next.js in dev
 
 ---
@@ -50,40 +50,40 @@
 
 ### 1.1 Indicator Calculations → `lib/indicators.ts`
 
-- [ ] Port `calculateSMA(data, period)` from `frontend/js/modules/indicators.js`
-- [ ] Port `calculateEMA(data, period)`
-- [ ] Port `calculateRSI(data, period)`
-- [ ] Port `calculateBB(data, period)` → returns `{upper, middle, lower}`
-- [ ] Port `calculateMACD(data, fast, slow, signal)` → returns `[{time, macd, signal, histogram}]`
-- [ ] Port `calculateStochastic(data, period)` → returns `[{time, k, d}]`
-- [ ] Write TypeScript types for indicator inputs/outputs
+- [x] Port `calculateSMA(data, period)` from `frontend/js/modules/indicators.js`
+- [x] Port `calculateEMA(data, period)`
+- [x] Port `calculateRSI(data, period)`
+- [x] Port `calculateBB(data, period)` → returns `{upper, middle, lower}`
+- [x] Port `calculateMACD(data, fast, slow, signal)` → returns `[{time, macd, signal, histogram}]`
+- [x] Port `calculateStochastic(data, period)` → returns `[{time, k, d}]`
+- [x] Write TypeScript types for indicator inputs/outputs (`Candle`, `IndicatorPoint`, `BBResult`, `StochasticPoint`, `MACDPoint`, `IndicatorConfig`)
 - [ ] Write unit tests for all indicator functions
 
 ### 1.2 Strategy Analysis → `lib/multi-indicators.ts`
 
-- [ ] Port `analyzeMultiIndicators(data, config)` — core strategy: RSI, Stoch, MACD, SMA, BB voting
-- [ ] Port `detectDojiSignal(candle, data, config)` — Doji + RSI + BB confluence
-- [ ] Port `calculateATR(data, period)`
-- [ ] Define TypeScript types for `MultiIndicatorConfig`, `MultiIndicatorResult`, `SignalType`
+- [x] Port `analyzeMultiIndicators(data, config)` — core strategy: RSI, Stoch, MACD, SMA, BB voting
+- [x] Port `detectDojiSignal(candle, data, config)` — Doji + RSI + BB confluence
+- [x] Port `calculateATR(data, period)`
+- [x] Define TypeScript types for `MultiIndicatorResult`, `DojiResult`, `SignalType`
 - [ ] Write unit tests for strategy analysis
 
 ### 1.3 Strategy Engine → `lib/strategies/`
 
-- [ ] Define abstract `StrategyBase` interface (TS)
-- [ ] Define `StrategyMetadata` type (name, description, defaultParams, supportedIndicators)
+- [x] Define `StrategyBase` interface + `SignalResult`, `StrategyMetadata`, `StrategyDefinition` types
+- [x] Define `StrategyMetadata` type (name, description, defaultParams, supportedIndicators)
 - [ ] Port `MultiMomentumStrategy` logic as pure function
-- [ ] Port `FastEMASMACrossoverStrategy` logic as pure function
+- [x] Port `FastEMASMACrossoverStrategy` logic as pure function (uses `crossUp`/`crossDown` from `technicalindicators`)
 - [ ] Port `AdaptiveConfluenceStrategy` logic as pure function
-- [ ] Create `strategyRegistry` map: `Record<string, StrategyDefinition>`
+- [x] Create `strategyRegistry` map (`lib/strategies/index.ts`)
 - [ ] Write unit tests for each strategy
 
 ### 1.4 Config & Constants → `lib/bot-config.ts`
 
-- [ ] Port `CONFIG` from `js/config.js`
-- [ ] Define `IndicatorConfig` type (periods, levels, enabled flags)
-- [ ] Define `StrategyConfig` type (strategy ID, minConfirmations, smaSlow, bbStdDev)
-- [ ] Define default values matching bot's hardcoded defaults
-- [ ] Define BotConstants (maxCandles, maxSignalHistory, signalTimeout, tickInterval)
+- [x] Port `CONFIG` from `js/config.js`
+- [x] Define `IndicatorConfig` type (in `lib/types.ts` — periods, levels, enabled flags)
+- [x] Define `StrategyConfig` type (strategy ID, minConfirmations, smaSlow, bbStdDev)
+- [x] Define default values matching bot's hardcoded defaults
+- [x] Define BotConstants (maxCandles, maxSignalHistory, signalTimeout, tickInterval)
 
 ---
 
@@ -419,8 +419,8 @@
 
 | Phase | Tasks | Est. Days | Status |
 |-------|-------|-----------|--------|
-| 0: Foundation | 11 | 1 | [ ] |
-| 1: Core Logic | 20 | 3 | [ ] |
+| 0: Foundation | 11 | 1 | [x] |
+| 1: Core Logic | 20 | 3 | [~] (1.1, 1.2, 1.4 done; 1.3 partial — MultiMomentum + AdaptiveConfluence pending) |
 | 2: WS & Data | 25 | 3 | [ ] |
 | 3: UI Components | 55 | 5 | [ ] |
 | 4: Integration | 16 | 3 | [ ] |
