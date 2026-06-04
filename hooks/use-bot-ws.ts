@@ -18,7 +18,7 @@ export interface UseBotWSReturn {
 }
 
 export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
-  const { apiToken } = options;
+  const { apiToken, appId } = options;
   const [ws, setWs] = useState<DerivWS | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -49,7 +49,8 @@ export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
   const connect = useCallback(() => {
     if (ws) return;
 
-    const instance = new DerivWS(getPublicWsUrl());
+    const wsUrl = `${getPublicWsUrl()}?app_id=${appId}`;
+    const instance = new DerivWS(wsUrl);
 
     instance.onConnectionStateChange((connected) => {
       setIsConnected(connected);
@@ -68,7 +69,7 @@ export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
     instance.connect().catch((err) => {
       setError(err instanceof Error ? err.message : 'Connection failed');
     });
-  }, [apiToken, doAuthorize, ws]);
+  }, [appId, apiToken, doAuthorize, ws]);
 
   const disconnect = useCallback(() => {
     if (ws) {
