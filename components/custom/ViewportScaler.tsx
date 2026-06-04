@@ -6,7 +6,7 @@ const MIN_SCALE = 0.5;
 const LG_BREAKPOINT = 1024; // matches Tailwind's `lg`
 
 type ScaleState = number | false | null;
-// null   = not yet measured  → render invisible to avoid layout-shift flash
+// null   = not yet measured  → render visible, no transform
 // false  = desktop viewport  → passthrough, no transform
 // number = mobile viewport   → transform: scale(n)
 
@@ -68,7 +68,6 @@ export default function ViewportScaler({ children }: { children: React.ReactNode
   }, []);
 
   const isMobile = typeof scale === 'number';
-  const isReady = scale !== null;
 
   // Desktop (or pre-measurement): plain passthrough container.
   // Also used as the measurement host before the first scale value is known.
@@ -77,9 +76,7 @@ export default function ViewportScaler({ children }: { children: React.ReactNode
       <div
         ref={containerRef}
         style={{
-          height: '100dvh',
-          opacity: isReady ? 1 : 0,
-          transition: 'opacity 0.15s ease',
+          height: '100vh',
         }}
       >
         {children}
@@ -90,7 +87,7 @@ export default function ViewportScaler({ children }: { children: React.ReactNode
   // Mobile with a computed scale.
   //
   // Two-layer structure:
-  //   • Outer clip wrapper — fixed 100vw × 100dvh, overflow:hidden.
+  //   • Outer clip wrapper — fixed 100vw × 100vh, overflow:hidden.
   //     Acts as the viewport "frame" and hides the oversized inner div
   //     before the CSS transform is applied.
   //   • Inner measured div (containerRef) — intentionally wider than the
@@ -101,10 +98,8 @@ export default function ViewportScaler({ children }: { children: React.ReactNode
     <div
       style={{
         width: '100vw',
-        height: '100dvh',
+        height: '100vh',
         overflow: 'hidden',
-        opacity: isReady ? 1 : 0,
-        transition: 'opacity 0.15s ease',
       }}
     >
       <div
@@ -112,8 +107,8 @@ export default function ViewportScaler({ children }: { children: React.ReactNode
         style={{
           transformOrigin: 'top left',
           transform: `scale(${scale})`,
-          // Both dimensions are 100% / scale of the outer clip wrapper (100vw × 100dvh),
-          // so after scale(n) they resolve to exactly 100vw × 100dvh.
+          // Both dimensions are 100% / scale of the outer clip wrapper (100vw × 100vh),
+          // so after scale(n) they resolve to exactly 100vw × 100vh.
           // display:flex + flexDirection:column lets children use flex-1 / shrink-0
           // against a definite height, keeping the buy-button footer anchored at the
           // visual bottom without any special positioning.

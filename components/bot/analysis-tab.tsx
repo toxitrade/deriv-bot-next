@@ -99,14 +99,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
               </Select>
             </div>
 
-            <div className="text-xs text-muted-foreground space-y-1">
-              <p>RSI Period: {config.indicatorConfig.rsiPeriod ?? 7}</p>
-              <p>RSI Levels: {config.indicatorConfig.rsiLow ?? 30}/{config.indicatorConfig.rsiHigh ?? 70}</p>
-              <p>Stoch Period: {config.indicatorConfig.stochPeriod ?? 14}</p>
-              <p>SMA Fast/Slow: {config.indicatorConfig.smaFast ?? 9}/{config.indicatorConfig.smaSlow ?? 21}</p>
-              <p>BB Period: {config.indicatorConfig.bbPeriod ?? 20} (StdDev: {config.indicatorConfig.bbStdDev ?? 2})</p>
-              <p>Min Confirmations: {config.indicatorConfig.minConfirmations ?? 3}</p>
-            </div>
+
           </CardContent>
         </Card>
 
@@ -172,6 +165,8 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
             <IndicatorDisplay
               indicators={indicators}
               isHistoryLoaded={candles.isHistoryLoaded}
+              strategyId={config.strategyId}
+              indicatorConfig={config.indicatorConfig}
             />
           </CardContent>
         </Card>
@@ -222,7 +217,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
           <CardTitle className="text-sm">Analysis Chart</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[50dvh] lg:h-[500px] min-h-[250px]">
+          <div className="h-[50vh] lg:h-[500px] min-h-[250px]">
             <BotChart
               ws={ws.ws}
               isConnected={ws.isConnected}

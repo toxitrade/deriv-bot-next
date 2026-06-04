@@ -145,7 +145,7 @@ export function RiseFallView({
 
   if (error) {
     return (
-      <main className="flex flex-col bg-background items-center justify-center px-4 min-h-dvh">
+      <main className="flex flex-col bg-background items-center justify-center px-4 min-h-screen">
         <Card className="max-w-md w-full">
           <CardHeader>
             <CardTitle className="text-destructive">Connection Error</CardTitle>
@@ -159,7 +159,7 @@ export function RiseFallView({
   }
 
   return (
-    <main className="flex flex-col bg-background max-lg:h-dvh lg:overflow-visible">
+    <main className="flex flex-col bg-background max-lg:h-screen lg:overflow-visible">
       <Header
         authState={authState}
         accounts={accounts}
@@ -186,7 +186,7 @@ export function RiseFallView({
         <div className="max-lg:flex max-lg:flex-col max-lg:flex-1 max-lg:min-h-0 lg:grid lg:grid-cols-[1fr_400px] lg:gap-4">
           {/* Column 1: Chart */}
           <div className="max-lg:shrink-0 flex flex-col gap-2 max-lg:px-3 max-lg:pb-2 pt-2 lg:py-0">
-            <div className="max-lg:h-[45dvh] lg:h-[min(33.6rem,66vh)] lg:min-h-[384px]">
+            <div className="max-lg:h-[45vh] lg:h-[min(33.6rem,66vh)] lg:min-h-[384px]">
               {chartData ? (
                 <RiseFallChart
                   symbolKey="rise-fall-chart"

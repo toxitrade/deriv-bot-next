@@ -11,12 +11,12 @@ export default function BotPage() {
   const state = useBotState();
 
   return (
-    <main className="flex flex-col bg-background max-lg:h-dvh max-lg:overflow-hidden">
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
-        <Link href="/" className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground shrink-0">
+    <main className="flex flex-col bg-background max-lg:h-screen max-lg:overflow-hidden">
+      <header className="fixed top-0 left-0 right-0 z-50 h-9 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-3 sm:px-4 gap-2 sm:gap-3">
+        <Link href="/" className="text-xs sm:text-sm font-normal text-muted-foreground hover:text-foreground shrink-0">
           Rise/Fall
         </Link>
-        <span className="text-xs sm:text-sm font-semibold">Trading Bot</span>
+        <span className="text-xs sm:text-sm font-normal">Trading Bot</span>
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2 text-xs">
           <span
             className={`inline-block w-2 h-2 rounded-full ${
@@ -29,7 +29,7 @@ export default function BotPage() {
         </div>
       </header>
 
-      <div className="h-14 shrink-0" />
+      <div className="h-9 shrink-0" />
 
       <div className="flex-1 max-lg:flex max-lg:flex-col max-lg:min-h-0 max-lg:overflow-hidden w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <Tabs defaultValue="trade" className="w-full max-lg:flex max-lg:flex-col max-lg:flex-1 max-lg:min-h-0">

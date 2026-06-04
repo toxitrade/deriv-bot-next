@@ -47,8 +47,8 @@ export interface BotState {
 let logIdCounter = 0;
 
 export function useBotState(): BotState {
-  const [apiToken, setApiToken] = useState('');
-  const [appId, setAppId] = useState('1089');
+  const [apiToken, setApiToken] = useState(process.env.NEXT_PUBLIC_BOT_API_TOKEN ?? '');
+  const [appId, setAppId] = useState(process.env.NEXT_PUBLIC_BOT_APP_ID ?? '1089');
   const [symbol, setSymbol] = useState('R_25');
   const [granularity, setGranularity] = useState(60);
   const [strategyId, setStrategyId] = useState<StrategyId>('multi-momentum');
@@ -97,6 +97,14 @@ export function useBotState(): BotState {
     config: indicatorConfig,
   });
   const execution = useSignalExecution(candles.dataHistory);
+
+  // Auto-connect on mount when API token is available
+  useEffect(() => {
+    if (apiToken) {
+      ws.connect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Log connection state changes
   useEffect(() => {

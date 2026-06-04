@@ -33,7 +33,7 @@ export default function ReportsPage() {
 
   if (authState !== 'authenticated') {
     return (
-      <main className="flex flex-col bg-background items-center justify-center min-h-dvh">
+      <main className="flex flex-col bg-background items-center justify-center min-h-screen">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </main>
     );
@@ -41,7 +41,7 @@ export default function ReportsPage() {
 
 
   return (
-    <main className="flex flex-col bg-background max-lg:h-dvh max-lg:overflow-y-auto lg:min-h-dvh">
+    <main className="flex flex-col bg-background max-lg:h-screen max-lg:overflow-y-auto lg:min-h-screen">
       <Header
         authState={authState}
         accounts={accounts}

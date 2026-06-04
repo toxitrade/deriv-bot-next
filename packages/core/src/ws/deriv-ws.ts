@@ -107,6 +107,7 @@ export class DerivWS {
       this.ws.onclose = () => {
         this.isConnecting = false;
         this.stopPing();
+        this.rejectAllPending(new Error('WebSocket connection closed'));
         this.subscriptionHandlers.clear();
         this.notifyConnectionState(false);
         this.attemptReconnect();
@@ -116,6 +117,7 @@ export class DerivWS {
 
   /**
    * Send a one-shot request and wait for the response matched by req_id.
+   * Rejects after 15s if no response is received.
    */
   send<T = Record<string, unknown>>(payload: Record<string, unknown>): Promise<T> {
     return new Promise((resolve, reject) => {
@@ -127,9 +129,20 @@ export class DerivWS {
       const reqId = ++this.reqIdCounter;
       const message = { ...payload, req_id: reqId };
 
+      const timeout = setTimeout(() => {
+        this.pendingRequests.delete(reqId);
+        reject(new Error(`Request timed out: ${JSON.stringify(payload)}`));
+      }, 15_000);
+
       this.pendingRequests.set(reqId, {
-        resolve: resolve as (data: Record<string, unknown>) => void,
-        reject,
+        resolve: (data) => {
+          clearTimeout(timeout);
+          resolve(data as T);
+        },
+        reject: (err) => {
+          clearTimeout(timeout);
+          reject(err);
+        },
       });
 
       this.ws.send(JSON.stringify(message));
@@ -185,6 +198,13 @@ export class DerivWS {
     };
   }
 
+  private rejectAllPending(error: Error): void {
+    for (const [reqId, pending] of this.pendingRequests) {
+      this.pendingRequests.delete(reqId);
+      pending.reject(error);
+    }
+  }
+
   disconnect(): void {
     this.stopPing();
     if (this.reconnectTimeout) {
@@ -192,12 +212,12 @@ export class DerivWS {
       this.reconnectTimeout = null;
     }
     this.reconnectAttempts = this.maxReconnectAttempts; // prevent reconnect
+    this.rejectAllPending(new Error('WebSocket disconnected'));
+    this.subscriptionHandlers.clear();
     if (this.ws) {
       this.ws.close();
       this.ws = null;
     }
-    this.pendingRequests.clear();
-    this.subscriptionHandlers.clear();
   }
 
   get isConnected(): boolean {

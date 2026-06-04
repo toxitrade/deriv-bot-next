@@ -111,7 +111,7 @@ export default function OfflinePreviewPage() {
   };
 
   return (
-    <main className="min-h-dvh bg-background px-3 py-4 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-background px-3 py-4 sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-7xl flex-col gap-4">
         <header className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border bg-card px-4 py-3 shadow-sm">
           <div>

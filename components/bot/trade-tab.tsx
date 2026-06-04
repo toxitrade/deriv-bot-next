@@ -82,6 +82,8 @@ export function TradeTab({ state }: TradeTabProps) {
             <IndicatorDisplay
               indicators={indicators}
               isHistoryLoaded={candles.isHistoryLoaded}
+              strategyId={config.strategyId}
+              indicatorConfig={config.indicatorConfig}
             />
           </CardContent>
         </Card>
@@ -116,7 +118,7 @@ export function TradeTab({ state }: TradeTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[45dvh] lg:h-[400px] min-h-[250px]">
+            <div className="h-[45vh] lg:h-[400px] min-h-[250px]">
               <BotChart
                 ws={ws.ws}
                 isConnected={ws.isConnected}
