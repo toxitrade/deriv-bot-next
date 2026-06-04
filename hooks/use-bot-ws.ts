@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { DerivWS } from '@deriv/core';
+import { DerivWS, getPublicWsUrl } from '@deriv/core';
 
 export interface UseBotWSOptions {
   apiToken: string;
@@ -18,7 +18,7 @@ export interface UseBotWSReturn {
 }
 
 export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
-  const { apiToken, appId } = options;
+  const { apiToken } = options;
   const [ws, setWs] = useState<DerivWS | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -49,8 +49,7 @@ export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
   const connect = useCallback(() => {
     if (ws) return;
 
-    const wsUrl = `wss://ws.binaryws.com/websockets/v3?app_id=${appId}`;
-    const instance = new DerivWS(wsUrl);
+    const instance = new DerivWS(getPublicWsUrl());
 
     instance.onConnectionStateChange((connected) => {
       setIsConnected(connected);
@@ -69,7 +68,7 @@ export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
     instance.connect().catch((err) => {
       setError(err instanceof Error ? err.message : 'Connection failed');
     });
-  }, [appId, apiToken, doAuthorize, ws]);
+  }, [apiToken, doAuthorize, ws]);
 
   const disconnect = useCallback(() => {
     if (ws) {
