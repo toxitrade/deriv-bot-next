@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { DerivWS, getPublicWsUrl } from '@deriv/core';
+import { DerivWS, getApiBaseUrl } from '@deriv/core';
 
 export interface UseBotWSOptions {
   apiToken: string;
@@ -17,36 +17,81 @@ export interface UseBotWSReturn {
   disconnect: () => void;
 }
 
+async function fetchOtpUrl(apiToken: string, appId: string): Promise<string> {
+  const base = getApiBaseUrl();
+
+  const accountsRes = await fetch(`${base}/accounts`, {
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Deriv-App-ID': appId,
+    },
+  });
+  if (!accountsRes.ok) {
+    throw new Error(`Failed to fetch accounts: ${accountsRes.status}`);
+  }
+  const accountsData = await accountsRes.json();
+  const accounts = accountsData?.data?.accounts ?? [];
+  if (accounts.length === 0) {
+    throw new Error('No trading accounts found');
+  }
+  const accountId = accounts[0].id;
+
+  const otpRes = await fetch(`${base}/accounts/${accountId}/otp`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiToken}`,
+      'Deriv-App-ID': appId,
+    },
+  });
+  if (!otpRes.ok) {
+    throw new Error(`Failed to get OTP: ${otpRes.status}`);
+  }
+  const otpData = await otpRes.json();
+  const wsUrl = otpData?.data?.url;
+  if (!wsUrl) {
+    throw new Error('OTP response missing WebSocket URL');
+  }
+  return wsUrl as string;
+}
+
 export function useBotWS(options: UseBotWSOptions): UseBotWSReturn {
-  const { appId } = options;
+  const { apiToken, appId } = options;
   const [ws, setWs] = useState<DerivWS | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const connectingRef = useRef(false);
 
-  const connect = useCallback(() => {
-    if (ws) return;
+  const connect = useCallback(async () => {
+    if (ws || connectingRef.current) return;
+    connectingRef.current = true;
+    setError(null);
 
-    const wsUrl = `${getPublicWsUrl()}?app_id=${appId}`;
-    const instance = new DerivWS(wsUrl);
+    try {
+      const otpUrl = await fetchOtpUrl(apiToken, appId);
+      const instance = new DerivWS(otpUrl);
 
-    instance.onConnectionStateChange((connected) => {
-      setIsConnected(connected);
-      if (connected) {
-        setWs(instance);
-        setIsAuthorized(true);
-      } else {
-        setWs(null);
-        setIsAuthorized(false);
-      }
-    });
+      instance.onConnectionStateChange((connected) => {
+        setIsConnected(connected);
+        if (connected) {
+          setWs(instance);
+          setIsAuthorized(true);
+        } else {
+          setWs(null);
+          setIsAuthorized(false);
+        }
+      });
 
-    instance.connect().catch((err) => {
+      await instance.connect();
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Connection failed');
-    });
-  }, [appId, ws]);
+    } finally {
+      connectingRef.current = false;
+    }
+  }, [apiToken, appId, ws]);
 
   const disconnect = useCallback(() => {
+    connectingRef.current = false;
     if (ws) {
       ws.disconnect();
       setWs(null);
