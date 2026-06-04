@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -34,6 +36,8 @@ export function StrategyTab({
   indicatorConfig,
   onIndicatorConfigChange,
 }: StrategyTabProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const updateConfig = (partial: Partial<IndicatorConfig>) => {
     onIndicatorConfigChange({ ...indicatorConfig, ...partial });
   };
@@ -43,6 +47,34 @@ export function StrategyTab({
       enabled: { ...indicatorConfig.enabled, [key]: value },
     });
   };
+
+  const handleExport = useCallback(() => {
+    const data = JSON.stringify({ strategyId, indicatorConfig }, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `strategy-${strategyId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [strategyId, indicatorConfig]);
+
+  const handleImport = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (parsed.strategyId) onStrategyIdChange(parsed.strategyId);
+        if (parsed.indicatorConfig) onIndicatorConfigChange(parsed.indicatorConfig);
+      } catch {
+        /* ignore invalid files */
+      }
+    };
+    reader.readAsText(file);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [onStrategyIdChange, onIndicatorConfigChange]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -219,6 +251,21 @@ export function StrategyTab({
                 step="0.5"
               />
             </div>
+          </div>
+          <div className="flex gap-2 mt-4">
+            <Button onClick={handleExport} variant="outline" size="sm" className="flex-1">
+              Export JSON
+            </Button>
+            <Button onClick={() => fileInputRef.current?.click()} variant="outline" size="sm" className="flex-1">
+              Import JSON
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
           </div>
         </CardContent>
       </Card>

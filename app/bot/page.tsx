@@ -12,11 +12,23 @@ export default function BotPage() {
 
   return (
     <main className="flex flex-col min-h-dvh bg-background">
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4">
-        <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground mr-4">
+      <header className="fixed top-0 left-0 right-0 z-50 h-14 border-b border-border bg-background/80 backdrop-blur-sm flex items-center px-4 gap-3">
+        <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground">
           Rise/Fall
         </Link>
         <span className="text-sm font-semibold">Trading Bot</span>
+        <div className="ml-auto flex items-center gap-2 text-xs">
+          <span
+            className={`inline-block w-2 h-2 rounded-full ${
+              state.ws.isConnected ? 'bg-green-500' : 'bg-red-500'
+            }`}
+          />
+          <span className="text-muted-foreground">
+            {state.ws.isConnected ? 'Connected' : 'Disconnected'}
+          </span>
+          <span className="text-muted-foreground/50">|</span>
+          <span className="text-muted-foreground">API Token</span>
+        </div>
       </header>
 
       <div className="h-14 shrink-0" />

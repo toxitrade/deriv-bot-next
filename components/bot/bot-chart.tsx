@@ -6,6 +6,7 @@ import { useSmartChartsApi } from '@/hooks/use-smartcharts-api';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import type { DerivWS } from '@deriv/core';
 import type { SmartChartsSymbol, TradingTimesMap } from '@/hooks/use-smartchart-chart-data';
+import type { ContractMarker } from '@/lib/chart-markers';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const SmartChartWrapper = dynamic(
@@ -18,6 +19,7 @@ export interface BotChartProps {
   isConnected: boolean;
   symbol: string;
   chartId?: string;
+  contractsArray?: ContractMarker[];
 }
 
 function buildTradingTimesMap(response: Record<string, unknown>): TradingTimesMap {
@@ -58,7 +60,7 @@ function buildTradingTimesMap(response: Record<string, unknown>): TradingTimesMa
   return map;
 }
 
-export function BotChart({ ws, isConnected, symbol, chartId = 'bot-chart' }: BotChartProps) {
+export function BotChart({ ws, isConnected, symbol, chartId = 'bot-chart', contractsArray }: BotChartProps) {
   const isMobile = useIsMobile();
   const [tradingTimes, setTradingTimes] = useState<TradingTimesMap | undefined>();
   const [activeSymbols, setActiveSymbols] = useState<SmartChartsSymbol[]>([]);
@@ -146,6 +148,7 @@ export function BotChart({ ws, isConnected, symbol, chartId = 'bot-chart' }: Bot
       subscribeQuotes={quotesApi.subscribeQuotes}
       unsubscribeQuotes={quotesApi.unsubscribeQuotes}
       defaultGranularity={0}
+      contractsArray={contractsArray}
     />
   );
 }

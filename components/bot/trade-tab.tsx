@@ -6,6 +6,7 @@ import { IndicatorDisplay } from '@/components/bot/indicator-display';
 import { SignalStatus } from '@/components/bot/signal-status';
 import { ResultsPanel } from '@/components/bot/results-panel';
 import { BotChart } from '@/components/bot/bot-chart';
+import { useSignalMarkers } from '@/hooks/use-signal-markers';
 import type { BotState, LogEntry } from '@/hooks/use-bot-state';
 
 export interface TradeTabProps {
@@ -45,6 +46,7 @@ function LogViewer({ logs }: { logs: LogEntry[] }) {
 
 export function TradeTab({ state }: TradeTabProps) {
   const { ws, candles, indicators, signal, execution, connection, config, logs } = state;
+  const signalMarkers = useSignalMarkers(execution.signalHistory);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
@@ -120,6 +122,7 @@ export function TradeTab({ state }: TradeTabProps) {
                 isConnected={ws.isConnected}
                 symbol={candles.symbol}
                 chartId="bot-trade-chart"
+                contractsArray={signalMarkers}
               />
             </div>
           </CardContent>

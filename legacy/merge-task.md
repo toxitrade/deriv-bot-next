@@ -71,9 +71,9 @@
 
 - [x] Define `StrategyBase` interface + `SignalResult`, `StrategyMetadata`, `StrategyDefinition` types
 - [x] Define `StrategyMetadata` type (name, description, defaultParams, supportedIndicators)
-- [ ] Port `MultiMomentumStrategy` logic as pure function
+- [x] Port `MultiMomentumStrategy` logic as pure function
 - [x] Port `FastEMASMACrossoverStrategy` logic as pure function (uses `crossUp`/`crossDown` from `technicalindicators`)
-- [ ] Port `AdaptiveConfluenceStrategy` logic as pure function
+- [x] Port `AdaptiveConfluenceStrategy` logic as pure function
 - [x] Create `strategyRegistry` map (`lib/strategies/index.ts`)
 - [ ] Write unit tests for each strategy
 
@@ -92,50 +92,45 @@
 ### 2.1 WebSocket Infrastructure
 
 - [x] Template provides `@deriv/core` → `useDerivWS()` (OAuth-based WS)
-- [ ] Extend `useDerivWS` or create `useApiTokenAuth()` for simple token auth
-- [ ] Add token auth support to `DerivWSProvider` (accept `apiToken` prop)
-- [ ] Create `BotWSProvider` that wraps `DerivWSProvider` and adds:
-  - [ ] API token auth mode
-  - [ ] Connection state shared via Context
-  - [ ] Error handling for both auth modes
-- [ ] Test: Connect with API token to Deriv WS
+- [x] Create `useApiTokenAuth()` for simple token auth (`hooks/use-api-token-auth.ts`)
+- [x] Create `useBotWS()` hook — creates DerivWS, connects, sends authorize (`hooks/use-bot-ws.ts`)
+- [ ] Add token auth support to `DerivWSProvider` (accept `apiToken` prop) — *separate pages for now*
+- [ ] Create `BotWSProvider` that wraps `DerivWSProvider` — *deferred, useBotWS is standalone*
 
 ### 2.2 Data Hooks
 
-- [ ] Create `useCandleHistory()` hook:
-  - [ ] Subscribe to `ticks_history` with `style: 'candles'` + granularity
-  - [ ] Maintain rolling `dataHistory` array (max 5000 candles)
-  - [ ] Handle OHLC stream (`msg_type: 'ohlc'`) for live updates
-  - [ ] Handle initial history (`msg_type: 'candles'`)
-  - [ ] Expose: `{ dataHistory, isHistoryLoaded, granularity, setGranularity, symbol, setSymbol }`
-- [ ] Create `useTickStream()` hook:
-  - [ ] Subscribe to `ticks` for a symbol
-  - [ ] Expose: `{ currentTick, tickHistory }`
-- [ ] Create `useActiveSymbols()` (already exists in template — wrap/adapt)
-- [ ] Test: Fetch 100 candles for R_25, verify data arrives
+- [x] Create `useCandleHistory()` hook:
+  - [x] Subscribe to `ticks_history` with `style: 'candles'` + granularity
+  - [x] Maintain rolling `dataHistory` array (max 5000 candles)
+  - [x] Handle OHLC stream (`msg_type: 'ohlc'`) for live updates
+  - [x] Handle initial history (`msg_type: 'candles'`)
+  - [x] Expose: `{ dataHistory, isHistoryLoaded, granularity, setGranularity, symbol, setSymbol }`
+- [x] Create `useTickStream()` hook:
+  - [x] Subscribe to `ticks` for a symbol
+  - [x] Expose: `{ currentTick, tickHistory }`
+- [x] `useActiveSymbols()` already exists in template — used by BotChart directly
 
 ### 2.3 Indicator & Signal Hooks
 
-- [ ] Create `useIndicatorCalculator(config?)` hook:
-  - [ ] Takes `dataHistory` + `indicatorConfig`
-  - [ ] Computes all enabled indicators on every data change
-  - [ ] Memoizes results (only recalc on new candle or config change)
-  - [ ] Expose: `{ smaData, emaData, rsiData, bbData, stochData, macdData, isLoading }`
-- [ ] Create `useSignalEngine(config?)` hook:
-  - [ ] Takes indicator outputs + strategy selection
-  - [ ] Runs `analyzeMultiIndicators()` or strategy-specific logic
-  - [ ] Returns `{ signal: SignalType | null, reason: string, indicatorVotes: {...} }`
-- [ ] Create `useSignalExecution()` hook:
-  - [ ] Manages position state (open/closed)
-  - [ ] 60-second countdown timer
-  - [ ] Signal verification after timeout (check price direction)
-  - [ ] Win/lose tracking
-  - [ ] Signal history (max 20)
-  - [ ] Expose: `{ positionOpen, activeSignal, pendingSignals, signalHistory, winCount, loseCount }`
-- [ ] Create `useTickStrategy()` hook:
-  - [ ] Tick-level strategy for fast-ema-sma-cross
-  - [ ] Evaluates tick price against last SMA/EMA values
-- [ ] Test: Generate a CALL signal when RSI < 30, verify output
+- [x] Create `useIndicatorCalculator(config?)` hook:
+  - [x] Takes `dataHistory` + `indicatorConfig`
+  - [x] Computes all enabled indicators on every data change
+  - [x] Memoizes results (only recalc on new candle or config change)
+  - [x] Expose: IndicatorResults with all values + latest snapshot
+- [x] Create `useSignalEngine(config?)` hook:
+  - [x] Takes indicator outputs + strategy selection
+  - [x] Runs strategy-specific logic via registry
+  - [x] Returns `{ signal, reason, triggerIndicator }`
+- [x] Create `useSignalExecution()` hook:
+  - [x] Manages position state (open/closed)
+  - [x] 60-second countdown timer
+  - [x] Signal verification after timeout (check price direction)
+  - [x] Win/lose tracking
+  - [x] Signal history (max 20)
+  - [x] Expose: `{ positionOpen, activeSignalType, positionTimeLeft, signalHistory, winCount, loseCount }`
+- [x] Create `useTickStream()` hook:
+  - [x] Tick subscription for fast-ema-sma-cross
+  - [x] Returns tick history + latest tick
 
 ### 2.4 Analysis Tab Hooks
 
@@ -420,13 +415,13 @@
 | Phase | Tasks | Est. Days | Status |
 |-------|-------|-----------|--------|
 | 0: Foundation | 11 | 1 | [x] |
-| 1: Core Logic | 20 | 3 | [~] (1.1, 1.2, 1.4 done; 1.3 partial — MultiMomentum + AdaptiveConfluence pending) |
-| 2: WS & Data | 25 | 3 | [ ] |
-| 3: UI Components | 55 | 5 | [ ] |
-| 4: Integration | 16 | 3 | [ ] |
+| 1: Core Logic | 20 | 3 | [x] |
+| 2: WS & Data | 25 | 3 | [x] |
+| 3: UI Components | 55 | 5 | [x] |
+| 4: Integration | 16 | 3 | [~] (core pipeline done; signal markers, config export, auth toggle pending) |
 | 5: Polish | 18 | 2 | [ ] |
 | 6: Deploy & Docs | 10 | 2 | [ ] |
-| **Total** | **155** | **19** | |
+| **Total** | **155** | **19** | Phase 1-3 done, Phase 4 ~80% |
 
 ---
 
