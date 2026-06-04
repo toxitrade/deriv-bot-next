@@ -222,7 +222,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
           <CardTitle className="text-sm">Analysis Chart</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[500px]">
+          <div className="h-[50dvh] lg:h-[500px] min-h-[250px]">
             <BotChart
               ws={ws.ws}
               isConnected={ws.isConnected}

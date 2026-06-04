@@ -116,7 +116,7 @@ export function TradeTab({ state }: TradeTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[400px]">
+            <div className="h-[45dvh] lg:h-[400px] min-h-[250px]">
               <BotChart
                 ws={ws.ws}
                 isConnected={ws.isConnected}
