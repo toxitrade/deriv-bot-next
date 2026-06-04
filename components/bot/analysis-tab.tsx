@@ -1,6 +1,8 @@
 'use client';
 
+import { useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -11,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { IndicatorDisplay } from '@/components/bot/indicator-display';
 import { BotChart } from '@/components/bot/bot-chart';
+import { useBacktest } from '@/hooks/use-backtest';
 import type { BotState, LogEntry } from '@/hooks/use-bot-state';
 import type { StrategyId } from '@/hooks/use-signal-engine';
 
@@ -58,6 +61,16 @@ export interface AnalysisTabProps {
 
 export function AnalysisTab({ state }: AnalysisTabProps) {
   const { ws, candles, indicators, signal, config, logs } = state;
+  const backtest = useBacktest();
+
+  const handleRunBacktest = useCallback(() => {
+    if (candles.dataHistory.length < 30) return;
+    backtest.runBacktest(
+      candles.dataHistory,
+      config.strategyId,
+      config.indicatorConfig
+    );
+  }, [candles.dataHistory, config.strategyId, config.indicatorConfig, backtest]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
@@ -94,6 +107,60 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
               <p>BB Period: {config.indicatorConfig.bbPeriod ?? 20} (StdDev: {config.indicatorConfig.bbStdDev ?? 2})</p>
               <p>Min Confirmations: {config.indicatorConfig.minConfirmations ?? 3}</p>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm">Backtest</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button
+              onClick={handleRunBacktest}
+              disabled={backtest.isRunning || candles.dataHistory.length < 30}
+              className="w-full"
+              size="sm"
+            >
+              {backtest.isRunning ? 'Running...' : 'Run Backtest'}
+            </Button>
+
+            {backtest.result && backtest.result.success && (
+              <div className="space-y-2">
+                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                  <div className="rounded bg-green-500/10 p-1.5">
+                    <div className="font-bold text-green-500">{backtest.result.stats.callCount}</div>
+                    <div className="text-muted-foreground">CALL</div>
+                  </div>
+                  <div className="rounded bg-red-500/10 p-1.5">
+                    <div className="font-bold text-red-500">{backtest.result.stats.putCount}</div>
+                    <div className="text-muted-foreground">PUT</div>
+                  </div>
+                  <div className="rounded bg-muted p-1.5">
+                    <div className="font-bold">{backtest.result.stats.signalsCount}</div>
+                    <div className="text-muted-foreground">Total</div>
+                  </div>
+                </div>
+
+                {backtest.result.signals.length > 0 && (
+                  <div className="max-h-32 overflow-y-auto space-y-0.5">
+                    {backtest.result.signals.slice(-20).reverse().map((s, i) => (
+                      <div key={i} className="flex justify-between text-xs py-0.5">
+                        <span className={s.type === 'CALL' ? 'text-green-500' : 'text-red-500'}>
+                          {s.type}
+                        </span>
+                        <span className="text-muted-foreground">
+                          {s.price.toFixed(2)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {backtest.result && !backtest.result.success && (
+              <p className="text-xs text-destructive">{backtest.result.error}</p>
+            )}
           </CardContent>
         </Card>
 
