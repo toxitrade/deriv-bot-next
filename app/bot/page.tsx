@@ -11,9 +11,11 @@ import Link from 'next/link';
 
 export default function BotPage() {
   const { ws, isConnected, auth } = useDerivWSContext();
-  // Never connect to public WS — only use authenticated connection
   const isAuthenticated = auth.authState === 'authenticated';
   const state = useBotState(isAuthenticated ? ws : null, isAuthenticated ? isConnected : false, auth.error);
+
+  const handleLogin = () => { auth.login().catch((e: Error) => console.error('Login failed', e)); };
+  const handleSignUp = () => { auth.signUp().catch((e: Error) => console.error('Sign up failed', e)); };
 
   return (
     <main className="flex flex-col bg-background max-lg:h-screen max-lg:overflow-hidden">
@@ -24,10 +26,10 @@ export default function BotPage() {
         <span className="text-xs sm:text-sm font-normal">Trading Bot</span>
         {!isAuthenticated ? (
           <div className="ml-auto flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={auth.login} className="h-7 text-xs">
+            <Button variant="outline" size="sm" onClick={handleLogin} className="h-7 text-xs">
               Log in
             </Button>
-            <Button size="sm" onClick={auth.signUp} className="h-7 text-xs">
+            <Button size="sm" onClick={handleSignUp} className="h-7 text-xs">
               Sign up
             </Button>
           </div>
@@ -58,10 +60,10 @@ export default function BotPage() {
             Log in with your Deriv account to use the trading bot.
           </p>
           <div className="flex gap-3">
-            <Button variant="outline" onClick={auth.login}>
+            <Button variant="outline" onClick={handleLogin}>
               Log in
             </Button>
-            <Button onClick={auth.signUp}>
+            <Button onClick={handleSignUp}>
               Sign up
             </Button>
           </div>
