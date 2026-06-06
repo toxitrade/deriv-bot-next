@@ -45,7 +45,7 @@ function LogViewer({ logs }: { logs: LogEntry[] }) {
 }
 
 export function TradeTab({ state }: TradeTabProps) {
-  const { ws, candles, indicators, signal, execution, connection, config, logs } = state;
+  const { ws, candles, indicators, signal, execution, config, logs } = state;
   const signalMarkers = useSignalMarkers(execution.signalHistory);
 
   return (
@@ -53,23 +53,16 @@ export function TradeTab({ state }: TradeTabProps) {
       <div className="space-y-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm">Connection</CardTitle>
+            <CardTitle className="text-sm">Settings</CardTitle>
           </CardHeader>
           <CardContent>
             <ConnectionPanel
-              apiToken={connection.apiToken}
-              onApiTokenChange={connection.setApiToken}
-              appId={connection.appId}
-              onAppIdChange={connection.setAppId}
               symbol={candles.symbol}
               onSymbolChange={candles.setSymbol}
               granularity={candles.granularity}
               onGranularityChange={candles.setGranularity}
               isConnected={ws.isConnected}
-              isAuthorized={ws.isAuthorized}
               error={ws.error}
-              onConnect={ws.connect}
-              onDisconnect={ws.disconnect}
             />
           </CardContent>
         </Card>

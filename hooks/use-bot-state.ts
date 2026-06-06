@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useBotWS } from '@/hooks/use-bot-ws';
+import type { DerivWS } from '@deriv/core';
 import { useCandleHistory } from '@/hooks/use-candle-history';
 import { useIndicatorCalculator } from '@/hooks/use-indicator-calculator';
 import { useSignalEngine } from '@/hooks/use-signal-engine';
@@ -17,7 +17,11 @@ export interface LogEntry {
 }
 
 export interface BotState {
-  ws: ReturnType<typeof useBotWS>;
+  ws: {
+    ws: DerivWS | null;
+    isConnected: boolean;
+    error: string | null;
+  };
   candles: ReturnType<typeof useCandleHistory> & {
     symbol: string;
     setSymbol: (s: string) => void;
@@ -33,12 +37,6 @@ export interface BotState {
     indicatorConfig: IndicatorConfig;
     setIndicatorConfig: (config: IndicatorConfig) => void;
   };
-  connection: {
-    apiToken: string;
-    setApiToken: (t: string) => void;
-    appId: string;
-    setAppId: (id: string) => void;
-  };
   logs: LogEntry[];
   addLog: (message: string, type?: LogEntry['type']) => void;
   clearLogs: () => void;
@@ -46,9 +44,11 @@ export interface BotState {
 
 let logIdCounter = 0;
 
-export function useBotState(): BotState {
-  const [apiToken, setApiToken] = useState(process.env.NEXT_PUBLIC_BOT_API_TOKEN ?? '');
-  const [appId, setAppId] = useState(process.env.NEXT_PUBLIC_BOT_APP_ID ?? '1089');
+export function useBotState(
+  ws: DerivWS | null,
+  isConnected: boolean,
+  error: string | null
+): BotState {
   const [symbol, setSymbol] = useState('R_25');
   const [granularity, setGranularity] = useState(60);
   const [strategyId, setStrategyId] = useState<StrategyId>('multi-momentum');
@@ -87,8 +87,7 @@ export function useBotState(): BotState {
     setLogs([]);
   }, []);
 
-  const ws = useBotWS({ apiToken, appId });
-  const candles = useCandleHistory(ws.ws, symbol, granularity);
+  const candles = useCandleHistory(ws, symbol, granularity);
   const indicators = useIndicatorCalculator(candles.dataHistory, indicatorConfig);
   const signal = useSignalEngine({
     strategyId,
@@ -98,29 +97,19 @@ export function useBotState(): BotState {
   });
   const execution = useSignalExecution(candles.dataHistory);
 
-  // Auto-connect on mount when API token is available
-  useEffect(() => {
-    if (apiToken) {
-      ws.connect();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // Log connection state changes
   useEffect(() => {
-    if (ws.isConnected && ws.isAuthorized) {
-      addLog('Connected and authorized', 'success');
-    } else if (ws.isConnected) {
-      addLog('WebSocket connected', 'info');
+    if (isConnected) {
+      addLog('WebSocket connected', 'success');
     }
-  }, [ws.isConnected, ws.isAuthorized, addLog]);
+  }, [isConnected, addLog]);
 
   // Log errors
   useEffect(() => {
-    if (ws.error) {
-      addLog(ws.error, 'error');
+    if (error) {
+      addLog(error, 'error');
     }
-  }, [ws.error, addLog]);
+  }, [error, addLog]);
 
   // Log candle history loaded
   useEffect(() => {
@@ -160,13 +149,12 @@ export function useBotState(): BotState {
   }, [execution.lastResult, addLog]);
 
   return {
-    ws,
+    ws: { ws, isConnected, error },
     candles: { ...candles, symbol, setSymbol, granularity, setGranularity },
     indicators,
     signal,
     execution,
     config: { strategyId, setStrategyId, indicatorConfig, setIndicatorConfig },
-    connection: { apiToken, setApiToken, appId, setAppId },
     logs,
     addLog,
     clearLogs,

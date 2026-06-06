@@ -90,7 +90,8 @@ export function useAuth(): UseAuthReturn {
     setAccounts(fetchedAccounts);
 
     if (fetchedAccounts.length > 0) {
-      const firstAccount = fetchedAccounts[0];
+      const demoAccount = fetchedAccounts.find((a) => a.account_type === 'demo');
+      const firstAccount = demoAccount ?? fetchedAccounts[0];
       setActiveAccountId(firstAccount.account_id);
 
       const otpUrl = await fetchOTPUrl(firstAccount.account_id, authInfo);
