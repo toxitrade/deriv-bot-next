@@ -19,7 +19,12 @@ import { getAuthBaseUrl } from '../config/urls';
 async function buildPkceParams(config: AuthConfig): Promise<URLSearchParams> {
   const csrfToken = generateRandomBase64url(32);
   const codeVerifier = generateRandomBase64url(32);
-  const codeChallenge = await sha256Base64url(codeVerifier);
+  let codeChallenge: string;
+  try {
+    codeChallenge = await sha256Base64url(codeVerifier);
+  } catch (err) {
+    throw new OAuthError(`Failed to generate PKCE challenge: ${err instanceof Error ? err.message : String(err)}`);
+  }
 
   storeCSRFToken(csrfToken);
   storeCodeVerifier(codeVerifier);
@@ -245,6 +250,7 @@ export async function handleOAuthCallback(
 export function cleanupUrl(baseUrl: string): void {
   if (typeof window === 'undefined') return;
 
+  // Clean the current URL by removing OAuth params
   const url = new URL(window.location.href);
   const paramsToRemove = ['code', 'state', 'scope', 'error', 'error_description'];
   paramsToRemove.forEach((param) => url.searchParams.delete(param));

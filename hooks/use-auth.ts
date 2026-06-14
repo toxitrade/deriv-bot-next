@@ -209,18 +209,39 @@ export function useAuth(): UseAuthReturn {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [authState, fetchOTPUrl]);
+document.addEventListener('visibilitychange', handleVisibilityChange);
+     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+   }, [authState, fetchOTPUrl]);
 
   // Phase 1: Initiate login — standard PKCE flow, no attribution params
   const login = useCallback(async () => {
-    await initiateLogin(getAuthConfig());
+    const config = getAuthConfig();
+    if (!config.clientId) {
+      setError('Deriv App ID not configured. Set NEXT_PUBLIC_DERIV_APP_ID in .env.local');
+      return;
+    }
+    try {
+      console.log('[OAuth] Attempting login with config:', { clientId: config.clientId, redirectUri: config.redirectUri });
+      await initiateLogin(config);
+    } catch (err) {
+      console.error('[useAuth] Login failed:', err);
+      setError(err instanceof Error ? err.message : 'Login failed');
+    }
   }, []);
 
   // Initiate sign-up — adds prompt=registration and partner attribution params
   const signUp = useCallback(async () => {
-    await initiateSignUp(getAuthConfig());
+    const config = getAuthConfig();
+    if (!config.clientId) {
+      setError('Deriv App ID not configured. Set NEXT_PUBLIC_DERIV_APP_ID in .env.local');
+      return;
+    }
+    try {
+      await initiateSignUp(config);
+    } catch (err) {
+      console.error('[useAuth] Sign up failed:', err);
+      setError(err instanceof Error ? err.message : 'Sign up failed');
+    }
   }, []);
 
   // Logout: close WS (handled by useDerivWS cleanup), clear storage, reset state

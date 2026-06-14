@@ -54,48 +54,72 @@ export default function BotPage() {
 
       <div className="h-9 shrink-0" />
 
-      {!isAuthenticated ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 px-4 text-center">
-          <p className="text-muted-foreground text-sm">
-            Log in with your Deriv account to use the trading bot.
-          </p>
-          <div className="flex gap-3">
-            <Button variant="outline" onClick={handleLogin}>
-              Log in
-            </Button>
-            <Button onClick={handleSignUp}>
-              Sign up
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className="flex-1 max-lg:flex max-lg:flex-col max-lg:min-h-0 max-lg:overflow-hidden w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
-          <Tabs defaultValue="trade" className="w-full max-lg:flex max-lg:flex-col max-lg:flex-1 max-lg:min-h-0">
-            <TabsList className="mb-3 sm:mb-4">
-              <TabsTrigger value="trade" className="text-xs sm:text-sm">TRADE</TabsTrigger>
-              <TabsTrigger value="strategy" className="text-xs sm:text-sm">STRATEGY</TabsTrigger>
-              <TabsTrigger value="analysis" className="text-xs sm:text-sm">ANALYSIS</TabsTrigger>
-            </TabsList>
+      <div className="flex-1 max-lg:flex max-lg:flex-col max-lg:min-h-0 max-lg:overflow-hidden w-full max-w-7xl mx-auto px-3 sm:px-4 py-3 sm:py-4">
+        <Tabs defaultValue="trade" className="w-full max-lg:flex max-lg:flex-col max-lg:flex-1 max-lg:min-h-0">
+          <TabsList className="mb-3 sm:mb-4">
+            <TabsTrigger value="trade" className="text-xs sm:text-sm">TRADE</TabsTrigger>
+            <TabsTrigger value="strategy" className="text-xs sm:text-sm">STRATEGY</TabsTrigger>
+            <TabsTrigger value="analysis" className="text-xs sm:text-sm">ANALYSIS</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="trade" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+<TabsContent value="trade" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+            {!isAuthenticated ? (
+              <div className="flex flex-col items-center justify-center gap-4 px-4 text-center py-12">
+                <p className="text-muted-foreground text-sm">
+                  Log in with your Deriv account to use the trading bot.
+                </p>
+                {auth.error && (
+                  <p className="text-sm text-destructive max-w-sm">{auth.error}</p>
+                )}
+                <div className="flex gap-3">
+                  <Button variant="outline" onClick={handleLogin}>
+                    Log in
+                  </Button>
+                  <Button onClick={handleSignUp}>
+                    Sign up
+                  </Button>
+                </div>
+              </div>
+            ) : (
               <TradeTab state={state} />
-            </TabsContent>
+            )}
+          </TabsContent>
 
-            <TabsContent value="strategy" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+          <TabsContent value="strategy" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+            {!isAuthenticated ? (
+              <div className="flex flex-col items-center justify-center gap-4 px-4 text-center py-12">
+                <p className="text-muted-foreground text-sm">
+                  Log in with your Deriv account to configure strategies.
+                </p>
+                {auth.error && (
+                  <p className="text-sm text-destructive max-w-sm">{auth.error}</p>
+                )}
+                <Button variant="outline" onClick={handleLogin}>Log in</Button>
+              </div>
+            ) : (
               <StrategyTab
                 strategyId={state.config.strategyId}
                 onStrategyIdChange={state.config.setStrategyId}
                 indicatorConfig={state.config.indicatorConfig}
                 onIndicatorConfigChange={state.config.setIndicatorConfig}
               />
-            </TabsContent>
+            )}
+          </TabsContent>
 
-            <TabsContent value="analysis" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+          <TabsContent value="analysis" className="max-lg:flex-1 max-lg:min-h-0 max-lg:overflow-y-auto max-lg:overscroll-contain">
+            {!isAuthenticated ? (
+              <div className="flex flex-col items-center justify-center gap-4 px-4 text-center py-12">
+                <p className="text-muted-foreground text-sm">
+                  Log in with your Deriv account to run analysis.
+                </p>
+                <Button variant="outline" onClick={handleLogin}>Log in</Button>
+              </div>
+            ) : (
               <AnalysisTab state={state} />
-            </TabsContent>
-          </Tabs>
-        </div>
-      )}
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </main>
   );
 }

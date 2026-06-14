@@ -11,7 +11,11 @@ export function generateRandomBase64url(byteLength: number = 32): string {
  * Encode a Uint8Array to a base64url string (RFC 4648 §5).
  */
 export function base64urlEncode(bytes: Uint8Array): string {
-  const binary = String.fromCharCode(...bytes);
+  let binary = '';
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
   const base64 = btoa(binary);
   return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
@@ -23,6 +27,11 @@ export function base64urlEncode(bytes: Uint8Array): string {
 export async function sha256Base64url(input: string): Promise<string> {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  let hashBuffer: ArrayBuffer;
+  try {
+    hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  } catch (err) {
+    throw new Error(`SHA-256 digest failed: ${err instanceof Error ? err.message : String(err)}`);
+  }
   return base64urlEncode(new Uint8Array(hashBuffer));
 }
