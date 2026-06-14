@@ -6,7 +6,7 @@ const nextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
-  allowedDevOrigins: ['10.42.0.1', '10.42.0.131'],
+  allowedDevOrigins: ['localhost', '10.42.0.1', '10.42.0.131'],
 }
 
 module.exports = nextConfig
