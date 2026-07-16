@@ -18,7 +18,7 @@ export function ResultsPanel({ winCount, loseCount, signalHistory }: ResultsPane
         Results
       </h4>
 
-      <div className="grid grid-cols-3 gap-2 text-center">
+      <div className="grid grid-cols-3 gap-2 max-sm:gap-1.5 sm:gap-2 text-center">
         <div className="rounded-md bg-green-500/10 p-2">
           <div className="text-lg font-bold text-green-500">{winCount}</div>
           <div className="text-xs text-muted-foreground">WIN</div>

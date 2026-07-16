@@ -77,7 +77,7 @@ export function StrategyTab({
   }, [onStrategyIdChange, onIndicatorConfigChange]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 max-sm:gap-3 sm:gap-4">
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="text-sm">Strategy</CardTitle>
@@ -205,7 +205,7 @@ export function StrategyTab({
           <CardTitle className="text-sm">Config Parameters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 max-sm:grid-cols-2 sm:grid-cols-3 gap-2 max-sm:gap-2 sm:gap-4">
             <div className="space-y-1">
               <Label>Min Confirmations</Label>
               <Input

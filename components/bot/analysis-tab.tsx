@@ -73,7 +73,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
   }, [candles.dataHistory, config.strategyId, config.indicatorConfig, backtest]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
+    <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-3 max-sm:gap-3 sm:gap-4">
       <div className="space-y-4">
         <Card>
           <CardHeader className="pb-3">
@@ -119,7 +119,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
 
             {backtest.result && backtest.result.success && (
               <div className="space-y-2">
-                <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="grid grid-cols-3 gap-2 max-sm:gap-1.5 sm:gap-2 text-center text-xs">
                   <div className="rounded bg-green-500/10 p-1.5">
                     <div className="font-bold text-green-500">{backtest.result.stats.callCount}</div>
                     <div className="text-muted-foreground">CALL</div>
@@ -217,7 +217,7 @@ export function AnalysisTab({ state }: AnalysisTabProps) {
           <CardTitle className="text-sm">Analysis Chart</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[50vh] lg:h-[500px] min-h-[250px]">
+          <div className="h-[40vh] max-sm:h-[40vh] lg:h-[500px] min-h-[200px]">
             <BotChart
               ws={ws.ws}
               isConnected={ws.isConnected}

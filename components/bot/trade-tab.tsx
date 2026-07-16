@@ -49,8 +49,8 @@ export function TradeTab({ state }: TradeTabProps) {
   const signalMarkers = useSignalMarkers(execution.signalHistory);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-4">
-      <div className="space-y-4">
+    <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-3 max-sm:gap-3 sm:gap-4">
+      <div className="space-y-3 max-sm:space-y-3 sm:space-y-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">Settings</CardTitle>
@@ -103,7 +103,7 @@ export function TradeTab({ state }: TradeTabProps) {
         </Card>
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-3 max-sm:space-y-3 sm:space-y-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm">
@@ -111,7 +111,7 @@ export function TradeTab({ state }: TradeTabProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-[45vh] lg:h-[400px] min-h-[250px]">
+            <div className="h-[38vh] max-sm:h-[38vh] lg:h-[400px] min-h-[200px]">
               <BotChart
                 ws={ws.ws}
                 isConnected={ws.isConnected}
