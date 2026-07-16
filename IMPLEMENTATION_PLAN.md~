@@ -1,0 +1,336 @@
+# Trading Bot Implementation Plan
+
+**All variables should be adapted or renamed to fit destiny project names.
+
+
+### Main Tabs (TRADE / STRATEGY / ANALYSIS)
+Navigation via tabs with `TabsList` containing:
+- **TRADE tab** (default): Live trading view
+- **STRATEGY tab**: Strategy configuration
+- **ANALYSIS tab**: Backtesting and analysis
+- **LOG**: (default): Log
+---
+
+## Tab 1: TRADE
+
+### Layout
+-Use default proyect layout
+
+[main content] + [sidebar]
+
+### Sidebar Section
+
+#### Card: Trade type
+- **"Manual" / "Bot" selection**
+  - Always visible on Trade Tab
+  - "Manual": Default trade layout, visible - bot hidden
+  - "Bot": New implementation sidebar layout, visible - manual hidden
+
+#### Card: Bot Indicators
+- **Strategy Name** (heading)
+  - Text from `STRATEGY_NAMES` map: 
+    - `multi-momentum` → "Multi Momentum"
+    - `fast-ema-sma-cross` → "EMA/SMA Cross Fast"
+    - `adaptive-confluence` → "Adaptive Confluence"
+    - `doji` → "Doji"
+
+- **Parameters Section**
+  - Label: "Parameters" (uppercase, muted text)
+  - Rows showing key-value:
+    - "Min Confirmations": value from config
+    - "RSI Period": value from config
+    - "RSI Range": "low–high" (e.g., "30–70")
+    - "Stoch Period": value from config
+    - "SMA Fast/Slow": "fast/slow" (e.g., "9/21")
+    - "BB Period/Std": "period/stdDev" (e.g., "20/2")
+
+- **Values Section**
+  - Label: "Values" (uppercase, muted text)
+  - Indicator rows (each with label and value):
+    - SMA: number or "--"
+    - EMA: number or "--"
+    - RSI: number with color signal
+      - Green (text-green-500) if RSI < 30 (oversold/bullish)
+      - Red (text-red-500) if RSI > 70 (overbought/bearish)
+    - BB Range: "lower–upper" or "--"
+    - Stoch: number or "--"
+    - MACD: number or "--"
+    - ATR: number or "--"
+
+#### Card: Bot Signal Status
+- **When no position & no result**: No output "--" (muted text)
+- **When position open**: 
+  - Background: green-500/10 (call) or red-500/10 (put)
+  - Border: green-500/30 or red-500/30
+  - Text: "CALL ACTIVE" or "PUT ACTIVE" (bold, colored)
+  - Countdown timer (e.g., "45s")
+  - Progress bar (width based on time left)
+
+- **When result available**:
+  - Background: green-500/10 or red-500/10
+  - Text: "WIN" or "LOSE" (bold, colored)
+  - Subtext: price change percentage
+
+
+
+### Main Content (Left Side)
+
+#### Card: Chart
+
+Default Chart view
+Draw enabled indicators lines
+
+---
+
+## Tab 2: STRATEGY
+
+### Layout
+
+[Chart] + [Sidebar]
+
+### Sidebar
+
+#### Card: Strategy
+- **Strategy Selector** (Dropdown)
+  - Text from `STRATEGY_NAMES` 
+  - Options maps Trade tab 1st Card: Strategy ´Heading'
+  - Label: "Strategy"
+
+#### Card: Indicators (Configuration)
+- Toggle switches for each indicator:
+  - RSI: toggle + period/high/low inputs (3-column grid when enabled)
+  - Stochastic: toggle + period input
+  - MACD: toggle + parm^n input
+  - SMA: toggle + period imput
+  - EMA: toggle + period input
+  - Bollinger Bands: toggle + bands inputs
+
+- Input fields for strategy parameters (3-column grid):
+  - Min Confirmations
+  - SMA Fast - SMA Slow
+  - BB Period - StdDev
+  - MACD - parms
+  - RSI - parms
+  - Stochastic - parms
+  
+- **Export/Import Buttons** (2 buttons side by side)
+  - "Export JSON" button
+  - "Import JSON" button (triggers hidden file input)
+
+### Chart
+
+Default chart view -non live-
+take snapshot every 15 min, get twice minimal amount of history date for the indicators to work nice + warmup time.
+when tab shows: draw strategy signals in the strategy_history_chart_data over chart view
+when any parameter modified, redraw signals on chart
+when any indicator toggles, redraw signals on chart
+
+---
+
+
+## Tab 3: ANALYSIS
+
+### Layout
+Same as TRADE tab   [chart] + [sidebar]
+
+#### Sidebar
+
+##### Card: Strategy Override
+
+Same strategy dropdown as STRATEGY tab:
+
+- **Strategy Selector** (Dropdown)
+  - Options with same mapping as above
+  - Label: "Strategy"
+  - Dont change TRADE or STRATEGY values or config
+
+##### Card: Backtest
+- **Run Backtest button**
+  - Disabled when: running OR < 30 candles
+  - Text: "Running..." when active, "Run Backtest" when idle
+
+- **Backtest Results** (shown after run):
+  - Stats grid (same 3-column layout)
+  - Recent signals list (last 20, reversed)
+    - Each: colored type (CALL/PUT) + price
+
+##### Card: Indicators (same as strategy)
+
+##### Card: Imrpove Strategy
+
+ - Generate function that makes several backtests varying enabled parameters, and follow improvement direction on win/loose ratio for profitablity. Propose enhancements for the function bot accuracy and performance.
+ - Display modified parameters and results for backtest
+ - Buttons for save/export improved strategy, prompt new name.
+ 
+##### Card: Manual Marks
+
+
+## Tab 4: LOG
+
+### Layout
+
+Content cover chart and sidebar
+
+**Results**
+  - Stats grid (3 columns):
+    - WIN box: green background, large number, "WIN" label
+    - LOSE box: red background, large number, "LOSE" label
+    - RATE box: muted background, percentage, "RATE" label
+
+  - Recent Signals list:
+    - Each row: signal type UPPERCASE + status
+    - Colors: green-500 (call/verified win), red-500 (put/verified loss), muted (pending)
+
+
+
+
+---
+
+## Strategy Analysis Functions
+
+### Core Types
+
+```typescript
+type SignalDirection = 'call' | 'put'
+type StrategyId = 'multi-momentum' | 'fast-ema-sma-cross' | 'adaptive-confluence' | 'doji'
+
+interface SignalResult {
+  signal: SignalDirection | null
+  reason: string
+  // Additional strategy-specific properties
+}
+```
+
+### Strategy: Fast EMA/SMA Cross
+
+```typescript
+function analyzeCrossover(candles, { smaPeriod, emaPeriod }) {
+  // Uses technicalindicators library crossUp/crossDown
+  // Calculates SMA series and EMA series
+  // Detects crossover points
+  
+  // CALL signal: EMA crosses above SMA
+  // PUT signal: EMA crosses below SMA
+  
+  return { signal, reason, sma, ema }
+}
+```
+
+**Parameters:**
+- smaPeriod: default 9
+- emaPeriod: default 21
+
+### Strategy: Multi Momentum
+
+```typescript
+function analyzeMultiMomentum(candles, { minConfirmations, rsiPeriod, rsiHigh, rsiLow, 
+  stochPeriod, smaFast, smaSlow, bbPeriod, bbStdDev, enabled }) {
+  // Analyzes multiple indicators in parallel
+  
+  // RSI: Bullish if < rsiLow, Bearish if > rsiHigh
+  // Stochastic: Bullish if K < 20, Bearish if K > 80
+  // MACD: Bullish if histogram crosses from negative to positive
+  // SMA: Bullish if price > fast > slow, Bearish if price < fast < slow
+  // BB: Bullish if price at/near lower band, Bearish if at/near upper band
+  
+  // Accumulates bullish/bearish counts
+  // Signal triggers when count >= minConfirmations
+}
+```
+
+**Parameters:**
+- minConfirmations: default 3
+- rsiPeriod: default 7
+- rsiHigh: default 70
+- rsiLow: default 30
+- stochPeriod: default 14
+- smaFast: default 9
+- smaSlow: default 21
+- bbPeriod: default 20
+- bbStdDev: default 2
+- enabled: object with rsi/stoch/macd/sma/bb booleans
+
+### Strategy: Adaptive Confluence
+
+```typescript
+function analyzeAdaptiveConfluence(candles, params, prevMacdHist) {
+  // EMA trend: Fast > Slow = bullish, Fast < Slow = bearish
+  // RSI regime: 45-70 = bullish, 30-55 = bearish
+  // MACD cross: Based on histogram cross
+  // BB structure: Position relative to bands
+  // Candle strength: Body size > 55% of range
+  
+  // Accumulates scores
+  // Signal triggers when bullish/bearish count >= minScore
+}
+```
+
+**Parameters:**
+- emaFast: 20
+- emaSlow: 50
+- rsiPeriod: 14
+- rsiBullMin: 45, rsiBullMax: 70
+- rsiBearMin: 30, rsiBearMax: 55
+- macdFast: 12, macdSlow: 26, macdSignal: 9
+- bbPeriod: 20, bbStdDev: 2
+- minScore: 3
+- coolDownCandles: 8
+
+### Strategy: Doji
+
+```typescript
+function detectDojiSignal(candle, candles, { rsiPeriod, rsiLow, rsiHigh, useBB, bbPeriod }) {
+  // Detects doji candles (small body relative to range)
+  // Uses RSI and optional BB for confirmation
+  // CALL: doji + RSI oversold + BB support
+  // PUT: doji + RSI overbought + BB resistance
+}
+```
+
+---
+
+## Color Palette
+
+- **Bullish/CALL**: `bg-green-500/10`, `border-green-500/30`, `text-green-500`
+- **Bearish/PUT**: `bg-red-500/10`, `border-red-500/30`, `text-red-500`
+- **Success/WIN**: `text-green-400`, `bg-green-500/10`
+- **Error/LOSE**: `text-red-400`, `bg-red-500/10`
+- **Muted**: `text-muted-foreground`, `bg-muted/50`
+- **Default text**: `text-foreground`
+
+---
+
+## Text Strings
+
+### Tab Labels
+- "TRADE"
+- "STRATEGY"
+- "ANALYSIS"
+
+### Connection
+- "Connected" / "Disconnected"
+- "Waiting for data..."
+
+### Signals
+- "CALL ACTIVE" / "PUT ACTIVE"
+- "WIN" / "LOSE"
+- "Pending..."
+- "Waiting for signal..."
+
+### Buttons
+- "Export JSON"
+- "Import JSON"
+- "Run Backtest" / "Running..."
+
+### Labels
+- "Symbol"
+- "Timeframe"
+- "Strategy"
+- "Indicators"
+- "Parameters"
+- "Values"
+- "Signal Status"
+- "Results"
+- "Log"
+- "Backtest"
+- "Current Signal"

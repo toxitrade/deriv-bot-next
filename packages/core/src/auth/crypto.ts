@@ -25,6 +25,13 @@ export function base64urlEncode(bytes: Uint8Array): string {
  * Used for PKCE code_challenge = BASE64URL(SHA256(code_verifier)).
  */
 export async function sha256Base64url(input: string): Promise<string> {
+  if (typeof crypto === 'undefined' || typeof crypto.subtle === 'undefined') {
+    throw new Error(
+      'Web Crypto API is unavailable. PKCE requires a secure context (HTTPS or localhost). ' +
+        'If serving insecurely, use a local HTTPS server.'
+    );
+  }
+
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
   let hashBuffer: ArrayBuffer;

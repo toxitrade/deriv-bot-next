@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --webpack",
+    "dev:https": "node scripts/dev-https.js",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build --webpack",
     "start": "next start",
     "copy-smartcharts-assets": "node scripts/copy-smartcharts-assets.js",
@@ -46,6 +47,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.0.0",
     "date-fns": "^3.0.0",
+    "http-proxy": "^1.18.1",
     "lucide-react": "^1.17.0",
     "next": "^16.2.9",
     "next-themes": "^0.2.1",
