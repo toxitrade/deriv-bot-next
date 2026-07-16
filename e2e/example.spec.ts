@@ -4,36 +4,28 @@ test.describe('Login Flow', () => {
   test('should show login page on /bot', async ({ page }) => {
     await page.goto('/bot');
     
-    // Check for login button
-    const loginButton = page.getByRole('button', { name: /log in/i });
-    await expect(loginButton).toBeVisible();
+    // Check for login button (multiple exist, so check count > 0)
+    const loginButtons = page.getByRole('button', { name: /log in/i });
+    await expect(loginButtons).toHaveCount(2);
     
     // Check for sign up button
-    const signUpButton = page.getByRole('button', { name: /sign up/i });
-    await expect(signUpButton).toBeVisible();
+    const signUpButtons = page.getByRole('button', { name: /sign up/i });
+    await expect(signUpButtons).toHaveCount(2);
     
     // Check for the prompt text
     await expect(page.getByText(/Log in with your Deriv account/)).toBeVisible();
   });
 
-  test('should show error when login is clicked without valid OAuth config', async ({ page }) => {
+  test('should redirect to OAuth provider when login is clicked', async ({ page }) => {
     await page.goto('/bot');
     
-    // Click login - this should redirect to OAuth provider
-    const [popup] = await Promise.all([
-      page.waitForEvent('popup', { timeout: 5000 }).catch(() => null),
-      page.getByRole('button', { name: /log in/i }).click(),
-    ]);
+    // Click the first login button - this triggers a full-page redirect to Deriv OAuth
+    const loginButton = page.getByRole('button', { name: /log in/i }).first();
     
-    // If popup opens, it means redirect happened (good sign)
-    // If no popup and no error message, login may have failed silently
-    if (!popup) {
-      // Check for error display
-      const errorEl = page.locator('.text-destructive');
-      // Either we have an error or we're still on the login page
-      const hasError = await errorEl.count() > 0;
-      const loginVisible = await page.getByRole('button', { name: /log in/i }).isVisible();
-      expect(hasError || loginVisible).toBeTruthy();
-    }
+    // Wait for navigation to the OAuth provider
+    await Promise.all([
+      page.waitForURL('https://auth.deriv.com/**', { timeout: 10000 }),
+      loginButton.click(),
+    ]);
   });
 });
