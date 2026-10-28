@@ -1,0 +1,18 @@
+[Unit]
+Description=1HZ50V HMA+Mladen Flow Trading Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/salma/deriv-bot-next
+EnvironmentFile=/home/salma/deriv-bot-next/.env
+ExecStart=/usr/bin/python3 /home/salma/deriv-bot-next/bot_1hz50v_pi.py
+Restart=always
+RestartSec=10
+User=salma
+StandardOutput=append:/home/salma/deriv-bot-next/bot_stdout.log
+StandardError=append:/home/salma/deriv-bot-next/bot_stderr.log
+
+[Install]
+WantedBy=multi-user.target
