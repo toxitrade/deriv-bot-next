@@ -1,0 +1,31 @@
+{
+  "label": "rsi-macd-only",
+  "params": {
+    "emaFast": 12,
+    "emaSlow": 26,
+    "rsiPeriod": 14,
+    "rsiBullMin": 49,
+    "rsiBullMax": 51,
+    "rsiBearMin": 49,
+    "rsiBearMax": 51,
+    "macdFast": 12,
+    "macdSlow": 26,
+    "macdSignal": 9,
+    "bbPeriod": 20,
+    "bbStdDev": 2,
+    "minScore": 3,
+    "coolDownCandles": 8
+  },
+  "stats": {
+    "total": 0,
+    "calls": 0,
+    "puts": 0,
+    "wins": 0,
+    "losses": 0,
+    "unresolved": 0,
+    "winRate": 0,
+    "totalPnl": 0,
+    "avgDelta": 0
+  },
+  "signals": []
+}

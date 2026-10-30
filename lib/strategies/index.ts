@@ -1,8 +1,9 @@
-import type { Candle } from '@/lib/types';
 import type { SignalResult, StrategyDefinition } from '@/lib/strategies/strategy-base';
 import { analyzeCrossover } from '@/lib/strategies/fast-ema-sma-cross';
 import { analyzeMultiMomentum } from '@/lib/strategies/multi-momentum';
 import { analyzeAdaptiveConfluence, macdFromCloses } from '@/lib/strategies/adaptive-confluence';
+import { analyzeHighConfidence } from '@/lib/strategies/high-confidence';
+import { analyzeHmaProFlow } from '@/lib/strategies/hma-pro-flow';
 
 const registry = new Map<string, StrategyDefinition>();
 
@@ -14,7 +15,7 @@ registry.set('fast-ema-sma-cross', {
     supportedIndicators: ['sma', 'ema'],
     defaultParams: { smaPeriod: 15, emaPeriod: 8 },
   },
-  analyze(candles: Candle[], params: Record<string, unknown>): SignalResult {
+  analyze(candles: import('@/lib/types').Candle[], params: Record<string, unknown>): SignalResult {
     const result = analyzeCrossover(candles, {
       smaPeriod: (params.smaPeriod as number) || 15,
       emaPeriod: (params.emaPeriod as number) || 8,
@@ -51,7 +52,7 @@ registry.set('multi-momentum', {
       'enabled.bb': true,
     },
   },
-  analyze(candles: Candle[], params: Record<string, unknown>): SignalResult {
+  analyze(candles: import('@/lib/types').Candle[], params: Record<string, unknown>): SignalResult {
     const result = analyzeMultiMomentum(candles, {
       minConfirmations: (params.minConfirmations as number) || 3,
       rsiPeriod: (params.rsiPeriod as number) || 7,
@@ -84,7 +85,8 @@ registry.set('adaptive-confluence', {
   metadata: {
     id: 'adaptive-confluence',
     name: 'Adaptive Confluence',
-    description: 'Trend (EMA20/50) + RSI regime + MACD cross + BB structure + candle strength',
+    description:
+      'Trend (EMA20/50) + RSI regime + MACD cross + BB structure + candle strength',
     supportedIndicators: ['ema', 'rsi', 'macd', 'bb'],
     defaultParams: {
       emaFast: 20,
@@ -103,7 +105,7 @@ registry.set('adaptive-confluence', {
       coolDownCandles: 8,
     },
   },
-  analyze(candles: Candle[], params: Record<string, unknown>): SignalResult {
+  analyze(candles: import('@/lib/types').Candle[], params: Record<string, unknown>): SignalResult {
     const prevMacd = computePrevMacdHist(candles);
     const result = analyzeAdaptiveConfluence(candles, {
       emaFast: (params.emaFast as number) || 20,
@@ -135,13 +137,93 @@ registry.set('adaptive-confluence', {
   },
 });
 
-function computePrevMacdHist(candles: Candle[]): number | null {
+registry.set('high-confidence', {
+  metadata: {
+    id: 'high-confidence',
+    name: 'High-Confidence Confluence',
+    description:
+      'Trend (EMA12/26) + narrow RSI regime (49-51) + MACD cross, BB dead code removed',
+    supportedIndicators: ['ema', 'rsi', 'macd'],
+    defaultParams: {
+      emaFast: 12,
+      emaSlow: 26,
+      rsiPeriod: 14,
+      rsiHigh: 51,
+      rsiLow: 49,
+      minScore: 3,
+      coolDownCandles: 8,
+    },
+  },
+  analyze(candles: import('@/lib/types').Candle[], params: Record<string, unknown>): SignalResult {
+    const result = analyzeHighConfidence(candles, {
+      emaFast: (params.emaFast as number) || 12,
+      emaSlow: (params.emaSlow as number) || 26,
+      rsiPeriod: (params.rsiPeriod as number) || 14,
+      rsiHigh: (params.rsiHigh as number) || 51,
+      rsiLow: (params.rsiLow as number) || 49,
+      minScore: (params.minScore as number) || 3,
+      coolDownCandles: (params.coolDownCandles as number) || 8,
+    });
+    return {
+      signal: result.signal,
+      reason: result.reason,
+      bullishCount: result.bullishCount,
+      bearishCount: result.bearishCount,
+      emaFast: result.rsi !== null ? undefined : result.rsi,
+      emaSlow: result.rsi !== null ? undefined : result.rsi,
+      rsi: result.rsi,
+      macdHist: result.macdHist,
+      bbPos: null, // BB removed - dead code
+    };
+  },
+});
+
+function computePrevMacdHist(candles: import('@/lib/types').Candle[]): number | null {
   if (candles.length < 2) return null;
   const closes = candles.map((c) => c.close);
   const prevCloses = closes.slice(0, -1);
   const result = macdFromCloses(prevCloses, 12, 26, 9);
   return result ? result.hist : null;
 }
+
+registry.set('hma-pro-flow', {
+  metadata: {
+    id: 'hma-pro-flow',
+    name: 'HMA Pro Flow [Mladen]',
+    description:
+      'Dual HMA system: Entry HMA (period 14, divisor 0.1) + Trend Filter HMA (period 300, divisor 2). ' +
+      'BUY when Fast HMA rising AND Slow HMA rising. SELL when Fast HMA falling AND Slow HMA falling. ' +
+      'STOP when Fast HMA direction conflicts with Slow HMA (pullback filter).',
+    supportedIndicators: ['hma', 'trend-filter'],
+    defaultParams: {
+      entryPeriod: 14,
+      entryDivisor: 0.1,
+      filterPeriod: 300,
+      filterDivisor: 2,
+      minScore: 1,
+      coolDownCandles: 0,
+    },
+  },
+  analyze(candles: import('@/lib/types').Candle[], params: Record<string, unknown>): SignalResult {
+    const result = analyzeHmaProFlow(candles, {
+      entryPeriod: (params.entryPeriod as number) || 14,
+      entryDivisor: (params.entryDivisor as number) || 0.1,
+      filterPeriod: (params.filterPeriod as number) || 300,
+      filterDivisor: (params.filterDivisor as number) || 2,
+      minScore: (params.minScore as number) || 1,
+      coolDownCandles: (params.coolDownCandles as number) || 0,
+    });
+    return {
+      signal: result.signal,
+      reason: result.reason,
+      fastHma: result.fastHma,
+      slowHma: result.slowHma,
+      fastRising: result.fastRising,
+      slowRising: result.slowRising,
+      aligned: result.aligned,
+    };
+  },
+});
 
 export function getStrategy(id: string): StrategyDefinition | undefined {
   return registry.get(id);
